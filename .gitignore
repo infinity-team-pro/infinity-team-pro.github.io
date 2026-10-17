@@ -1,0 +1,5 @@
+# служебное — не публикуем
+.claude/
+*.log
+Thumbs.db
+desktop.ini

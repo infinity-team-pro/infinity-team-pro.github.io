@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Infinity Team — Roblox-игры на заказ</title>
+  <meta name="description" content="Делаем Roblox-игры на заказ: геймплей, карта и 3D-модели, интерфейс, экономика и монетизация. А ещё сайты, Telegram-боты, автоматизация, видеомонтаж и дизайн.">
+  <meta property="og:title" content="Infinity Team — Roblox-игры на заказ">
+  <meta property="og:description" content="Собираем Roblox-игру целиком: от идеи до релиза.">
+  <meta name="theme-color" content="#F8F8F8">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23C4281C'/%3E%3Ctext x='16' y='23' font-size='20' text-anchor='middle' fill='white' font-family='Arial Black,sans-serif'%3E%E2%88%9E%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Onest:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip" href="#main" data-i18n="skip">Перейти к содержанию</a>
+
+  <header class="top">
+    <div class="wrap top-inner">
+      <a class="logo" href="#top"><span class="logo-mark" aria-hidden="true">∞</span>Infinity Team</a>
+      <nav class="nav" data-i18n-aria="nav.label" aria-label="Разделы">
+        <a href="#game" data-i18n="nav.game">Игра под ключ</a>
+        <a href="#how" data-i18n="nav.how">Как работаем</a>
+        <a href="#services" data-i18n="nav.services">Услуги</a>
+      </nav>
+      <div class="top-actions">
+        <div class="lang" role="group" aria-label="Язык / Language">
+          <button type="button" data-lang="ru" aria-pressed="true">RU</button>
+          <button type="button" data-lang="en" aria-pressed="false">EN</button>
+        </div>
+        <a class="btn btn-red btn-small" href="https://t.me/yyfvjk" target="_blank" rel="noopener" data-i18n="cta.short">Написать</a>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero" id="top">
+      <div class="wrap hero-inner">
+        <div class="hero-text">
+          <h1 data-i18n="hero.title" data-i18n-html>Делаем <span class="nw">Roblox-игры</span> на&nbsp;заказ</h1>
+          <p class="lead" data-i18n="hero.lead">Собираем игру целиком: геймплей, карту и 3D-модели, интерфейс, экономику и монетизацию. Вы приносите идею — мы доводим её до релиза.</p>
+          <div class="hero-actions">
+            <a class="btn btn-red" href="https://t.me/yyfvjk" target="_blank" rel="noopener" data-i18n="cta.game">Обсудить игру в Telegram</a>
+            <a class="text-link" href="#services" data-i18n="hero.more">Другие услуги</a>
+          </div>
+          <p class="note" data-i18n="hero.note">Цену называем под вашу задачу. Обсуждение бесплатное.</p>
+        </div>
+        <div class="hero-art" aria-hidden="true">
+          <svg id="island" class="island" role="presentation"></svg>
+        </div>
+      </div>
+    </section>
+
+    <section class="game" id="game">
+      <div class="wrap game-inner">
+        <div class="game-intro">
+          <h2 data-i18n="game.title">Что входит в игру под ключ</h2>
+          <p data-i18n="game.lead">Так устроен любой проект в Roblox Studio. Мы берём на себя каждую часть.</p>
+        </div>
+
+        <div class="explorer">
+          <div class="explorer-root"><span class="tri" aria-hidden="true">▾</span><span class="cube cube-ink" aria-hidden="true"></span><strong data-i18n="game.root">Ваша игра</strong></div>
+          <ul class="explorer-tree">
+            <li>
+              <span class="cube cube-green" aria-hidden="true"></span>
+              <div>
+                <span class="studio-name">Workspace</span>
+                <h3 data-i18n="game.ws.t">Карта и 3D-модели</h3>
+                <p data-i18n="game.ws.d">Окружение, персонажи и предметы. Моделим в Blender и собираем мир в Studio.</p>
+              </div>
+            </li>
+            <li>
+              <span class="cube cube-blue" aria-hidden="true"></span>
+              <div>
+                <span class="studio-name">ServerScriptService</span>
+                <h3 data-i18n="game.sss.t">Геймплей и логика</h3>
+                <p data-i18n="game.sss.d">Механики, бои, прогресс и сохранения. Логику держим на сервере, чтобы защитить игру от читов и дюпа.</p>
+              </div>
+            </li>
+            <li>
+              <span class="cube cube-yellow" aria-hidden="true"></span>
+              <div>
+                <span class="studio-name">ReplicatedStorage</span>
+                <h3 data-i18n="game.rs.t">Экономика и баланс</h3>
+                <p data-i18n="game.rs.d">Валюта, магазин, прокачка и награды. Считаем баланс, чтобы в игру хотелось возвращаться.</p>
+              </div>
+            </li>
+            <li>
+              <span class="cube cube-red" aria-hidden="true"></span>
+              <div>
+                <span class="studio-name">StarterGui</span>
+                <h3 data-i18n="game.gui.t">Интерфейс</h3>
+                <p data-i18n="game.gui.d">Меню, HUD и магазин. Проверяем, что удобно играть с телефона.</p>
+              </div>
+            </li>
+            <li>
+              <span class="cube cube-lime" aria-hidden="true"></span>
+              <div>
+                <span class="studio-name">MarketplaceService</span>
+                <h3 data-i18n="game.mp.t">Монетизация</h3>
+                <p data-i18n="game.mp.d">Геймпассы и покупки за Robux, чтобы игра зарабатывала.</p>
+              </div>
+            </li>
+            <li>
+              <span class="cube cube-stone" aria-hidden="true"></span>
+              <div>
+                <span class="studio-name">Game Settings</span>
+                <h3 data-i18n="game.pub.t">Запуск и обновления</h3>
+                <p data-i18n="game.pub.d">Публикуем игру, исправляем ошибки и добавляем ивенты после релиза.</p>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="how" id="how">
+      <div class="wrap">
+        <h2 data-i18n="how.title">Как идёт работа</h2>
+        <ol class="steps">
+          <li>
+            <span class="step-num" aria-hidden="true">1</span>
+            <h3 data-i18n="how.1.t">Заявка</h3>
+            <p data-i18n="how.1.d">Пишете в Telegram, какая игра нужна: жанр, примеры, сроки.</p>
+          </li>
+          <li>
+            <span class="step-num" aria-hidden="true">2</span>
+            <h3 data-i18n="how.2.t">Обсуждение</h3>
+            <p data-i18n="how.2.d">Уточняем идею и называем цену и срок.</p>
+          </li>
+          <li>
+            <span class="step-num" aria-hidden="true">3</span>
+            <h3 data-i18n="how.3.t">Прототип</h3>
+            <p data-i18n="how.3.d">Собираем играбельную версию основного цикла, чтобы вы оценили геймплей.</p>
+          </li>
+          <li>
+            <span class="step-num" aria-hidden="true">4</span>
+            <h3 data-i18n="how.4.t">Разработка</h3>
+            <p data-i18n="how.4.d">Делаем по этапам и после каждого присылаем видео.</p>
+          </li>
+          <li>
+            <span class="step-num" aria-hidden="true">5</span>
+            <h3 data-i18n="how.5.t">Запуск</h3>
+            <p data-i18n="how.5.d">Публикуем игру и помогаем с обновлениями.</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="services" id="services">
+      <div class="wrap">
+        <h2 data-i18n="srv.title">Ещё мы делаем</h2>
+        <p class="services-lead" data-i18n="srv.lead">Всё, что связано с кодом, и немного больше. Цена каждой услуги — по запросу.</p>
+        <div class="service-groups">
+          <div class="service-group group-code">
+            <h3 data-i18n="srv.code">Код</h3>
+            <ul>
+              <li><strong data-i18n="srv.web.t">Сайты и лендинги</strong><span data-i18n="srv.web.d">От одной страницы до интернет-магазина.</span></li>
+              <li><strong data-i18n="srv.bot.t">Telegram-боты</strong><span data-i18n="srv.bot.d">Заявки, оплата, рассылки, учёт — бот работает за вас.</span></li>
+              <li><strong data-i18n="srv.app.t">Приложения и программы</strong><span data-i18n="srv.app.d">Программы под Windows и инструменты для бизнеса.</span></li>
+              <li><strong data-i18n="srv.ai.t">Автоматизация и ИИ</strong><span data-i18n="srv.ai.d">ИИ-боты и интеграции, которые убирают рутину.</span></li>
+            </ul>
+          </div>
+          <div class="service-group group-creative">
+            <h3 data-i18n="srv.creative">Креатив</h3>
+            <ul>
+              <li><strong data-i18n="srv.3d.t">3D-модели в Blender</strong><span data-i18n="srv.3d.d">Персонажи, предметы и окружение для игр.</span></li>
+              <li><strong data-i18n="srv.video.t">Видеомонтаж</strong><span data-i18n="srv.video.d">Reels, TikTok, Shorts и YouTube.</span></li>
+              <li><strong data-i18n="srv.design.t">Графический дизайн</strong><span data-i18n="srv.design.d">Логотипы, баннеры, превью и карточки товаров.</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta" id="contact">
+      <div class="wrap cta-inner">
+        <div>
+          <h2 data-i18n="cta.title">Есть идея игры или другая задача?</h2>
+          <p data-i18n="cta.text">Напишите — расскажем, как это сделать и сколько будет стоить.</p>
+        </div>
+        <a class="btn btn-white" href="https://t.me/yyfvjk" target="_blank" rel="noopener" data-i18n="cta.btn">Написать в Telegram</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <div class="wrap foot-inner">
+      <div>
+        <a class="logo logo-foot" href="#top"><span class="logo-mark" aria-hidden="true">∞</span>Infinity Team</a>
+        <p data-i18n="foot.about">Команда, которая делает игры, сайты и ботов.</p>
+      </div>
+      <p><a href="https://t.me/yyfvjk" target="_blank" rel="noopener">Telegram: @yyfvjk</a></p>
+      <p class="foot-legal" data-i18n="foot.legal">Roblox — товарный знак Roblox Corporation. Infinity Team — независимая студия и не связана с Roblox Corporation.</p>
+      <p class="foot-legal">© 2026 Infinity Team</p>
+    </div>
+  </footer>
+
+  <script src="main.js"></script>
+</body>
+</html>
