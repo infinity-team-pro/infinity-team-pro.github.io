@@ -460,8 +460,8 @@ a { color: var(--blue); }
   .cta-inner .btn { width: 100%; }
 }
 
-@media (max-width: 360px) {
-  .top .btn-small { display: none; }   /* на узких экранах большая кнопка есть на первом экране */
+@media (max-width: 400px) {
+  .top .btn-small { display: none; }   /* на телефонах большая кнопка есть на первом экране */
 }
 
 @media (prefers-reduced-motion: reduce) {
