@@ -13,6 +13,16 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Onest:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <!-- 3D-движок Three.js для сцены на первом экране -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.min.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"
+      }
+    }
+  </script>
 </head>
 <body>
   <!-- логотип: лента-бесконечность на ночном небе -->
@@ -60,7 +70,11 @@
           <p class="note" data-i18n="hero.note">Цену называем под вашу задачу. Обсуждение бесплатное.</p>
         </div>
         <div class="hero-art" aria-hidden="true">
-          <svg id="island" class="island"></svg>
+          <div class="scene3d">
+            <svg class="moon" viewBox="-20 -20 40 40"><path d="M5,-16A17,17 0 1,0 5,16A20,20 0 0,1 5,-16Z" fill="#F5CD30"/></svg>
+            <canvas></canvas>
+            <div class="money-badge">$ 0</div>
+          </div>
         </div>
       </div>
     </section>
@@ -211,5 +225,6 @@
   </footer>
 
   <script src="main.js"></script>
+  <script src="scene.js"></script>
 </body>
 </html>

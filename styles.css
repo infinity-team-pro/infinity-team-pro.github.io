@@ -226,16 +226,59 @@ a { color: var(--night-700); }
 .note { margin-top: 22px; font-size: 0.95rem; color: var(--sky-300); }
 
 .hero-art { display: flex; justify-content: center; }
-.island { width: 100%; max-width: 600px; height: auto; overflow: visible; }
 
-/* блок «вырастает» из своего низа, а не из угла картинки */
-.island .b { transform-box: fill-box; transform-origin: 50% 100%; }
-
-/* окна компаний загораются, когда стройка закончена */
-.island .win polygon { transition: fill 0.6s ease; }
-.island.lit .win .t { fill: #FFE27A; }
-.island.lit .win .l { fill: #F5CD30; }
-.island.lit .win .r { fill: #D9AE14; }
+/* 3D-сцена: строители, стеклянная студия, клиент с деньгами */
+.scene3d {
+  position: relative;
+  width: 100%;
+  max-width: 640px;
+  aspect-ratio: 1 / 1.04;
+}
+.scene3d canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.9s ease;
+}
+.scene3d.ready canvas { opacity: 1; }
+.scene3d.no-3d { display: none; }
+.moon {
+  position: absolute;
+  left: 4%;
+  top: 2%;
+  width: 46px;
+  height: 46px;
+}
+.money-badge {
+  position: absolute;
+  left: 0;
+  top: 0;
+  padding: 7px 14px;
+  border-radius: 10px;
+  background: #fff;
+  color: var(--ink);
+  font: 700 1.05rem/1.2 var(--font-body);
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 6px 20px rgba(6, 14, 46, 0.35);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.money-badge::after {          /* хвостик к голове клиента */
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -6px;
+  width: 12px;
+  height: 12px;
+  background: #fff;
+  transform: translateX(-50%) rotate(45deg);
+  border-radius: 2px;
+}
+.money-badge.on { opacity: 1; }
+.money-badge.bump { animation: bump 0.25s ease-out; }
+@keyframes bump { 50% { scale: 1.12; } }
 
 /* ---------- что входит в игру: панель Explorer ---------- */
 .game { padding-block: 104px; }
@@ -433,7 +476,7 @@ a { color: var(--night-700); }
   .nav { display: none; }
   .hero-inner { grid-template-columns: 1fr; min-height: 0; padding-block: 40px 48px; }
   .hero-art { order: 2; }
-  .island { max-width: 480px; }
+  .scene3d { max-width: 520px; }
   .game-inner { grid-template-columns: 1fr; gap: 32px; }
   .game-intro { position: static; }
   .steps { grid-template-columns: 1fr; gap: 0; }
@@ -469,5 +512,5 @@ a { color: var(--night-700); }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .btn { transition: none; }
-  .island .win polygon { transition: none; }
+  .money-badge.bump { animation: none; }
 }
