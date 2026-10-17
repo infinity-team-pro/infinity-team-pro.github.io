@@ -7,19 +7,30 @@
   <meta name="description" content="Делаем Roblox-игры на заказ: геймплей, карта и 3D-модели, интерфейс, экономика и монетизация. А ещё сайты, Telegram-боты, автоматизация, видеомонтаж и дизайн.">
   <meta property="og:title" content="Infinity Team — Roblox-игры на заказ">
   <meta property="og:description" content="Собираем Roblox-игру целиком: от идеи до релиза.">
-  <meta name="theme-color" content="#F8F8F8">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23C4281C'/%3E%3Ctext x='16' y='23' font-size='20' text-anchor='middle' fill='white' font-family='Arial Black,sans-serif'%3E%E2%88%9E%3C/text%3E%3C/svg%3E">
+  <meta name="theme-color" content="#0B1A4A">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='10' fill='%2314307F'/%3E%3Cpath d='M20 20C16 12 7.5 12 7.5 20S16 28 20 20 32.5 12 32.5 20 24 28 20 20Z' fill='none' stroke='white' stroke-width='4.4'/%3E%3Cpath d='M31 5.5L32 8 34.5 9 32 10 31 12.5 30 10 27.5 9 30 8Z' fill='%23F5CD30'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Onest:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <!-- логотип: лента-бесконечность на ночном небе -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <symbol id="logo-sym" viewBox="0 0 40 40">
+      <rect width="40" height="40" rx="10" fill="#14307F"/>
+      <path d="M20 20C16 12 7.5 12 7.5 20S16 28 20 20 32.5 12 32.5 20 24 28 20 20Z" fill="none" stroke="#fff" stroke-width="4.4" stroke-linejoin="round"/>
+      <path d="M17.9 23.1 22.1 16.9" stroke="#14307F" stroke-width="8"/>
+      <path d="M17.6 23.5 22.4 16.5" stroke="#fff" stroke-width="4.4"/>
+      <path d="M31 5.5L32 8 34.5 9 32 10 31 12.5 30 10 27.5 9 30 8Z" fill="#F5CD30"/>
+    </symbol>
+  </svg>
+
   <a class="skip" href="#main" data-i18n="skip">Перейти к содержанию</a>
 
   <header class="top">
     <div class="wrap top-inner">
-      <a class="logo" href="#top"><span class="logo-mark" aria-hidden="true">∞</span>Infinity Team</a>
+      <a class="logo" href="#top"><svg class="logo-mark" aria-hidden="true"><use href="#logo-sym"/></svg>Infinity Team</a>
       <nav class="nav" data-i18n-aria="nav.label" aria-label="Разделы">
         <a href="#game" data-i18n="nav.game">Игра под ключ</a>
         <a href="#how" data-i18n="nav.how">Как работаем</a>
@@ -30,25 +41,26 @@
           <button type="button" data-lang="ru" aria-pressed="true">RU</button>
           <button type="button" data-lang="en" aria-pressed="false">EN</button>
         </div>
-        <a class="btn btn-red btn-small" href="https://t.me/yyfvjk" target="_blank" rel="noopener" data-i18n="cta.short">Написать</a>
+        <a class="btn btn-yellow btn-small" href="https://t.me/yyfvjk" target="_blank" rel="noopener" data-i18n="cta.short">Написать</a>
       </div>
     </div>
   </header>
 
   <main id="main">
     <section class="hero" id="top">
+      <canvas class="stars" aria-hidden="true"></canvas>
       <div class="wrap hero-inner">
         <div class="hero-text">
           <h1 data-i18n="hero.title" data-i18n-html>Делаем <span class="nw">Roblox-игры</span> на&nbsp;заказ</h1>
           <p class="lead" data-i18n="hero.lead">Собираем игру целиком: геймплей, карту и 3D-модели, интерфейс, экономику и монетизацию. Вы приносите идею — мы доводим её до релиза.</p>
           <div class="hero-actions">
-            <a class="btn btn-red" href="https://t.me/yyfvjk" target="_blank" rel="noopener" data-i18n="cta.game">Обсудить игру в Telegram</a>
+            <a class="btn btn-yellow" href="https://t.me/yyfvjk" target="_blank" rel="noopener" data-i18n="cta.game">Обсудить игру в Telegram</a>
             <a class="text-link" href="#services" data-i18n="hero.more">Другие услуги</a>
           </div>
           <p class="note" data-i18n="hero.note">Цену называем под вашу задачу. Обсуждение бесплатное.</p>
         </div>
         <div class="hero-art" aria-hidden="true">
-          <svg id="island" class="island" role="presentation"></svg>
+          <svg id="island" class="island"></svg>
         </div>
       </div>
     </section>
@@ -181,7 +193,7 @@
           <h2 data-i18n="cta.title">Есть идея игры или другая задача?</h2>
           <p data-i18n="cta.text">Напишите — расскажем, как это сделать и сколько будет стоить.</p>
         </div>
-        <a class="btn btn-white" href="https://t.me/yyfvjk" target="_blank" rel="noopener" data-i18n="cta.btn">Написать в Telegram</a>
+        <a class="btn btn-yellow" href="https://t.me/yyfvjk" target="_blank" rel="noopener" data-i18n="cta.btn">Написать в Telegram</a>
       </div>
     </section>
   </main>
@@ -189,7 +201,7 @@
   <footer class="foot">
     <div class="wrap foot-inner">
       <div>
-        <a class="logo logo-foot" href="#top"><span class="logo-mark" aria-hidden="true">∞</span>Infinity Team</a>
+        <a class="logo logo-foot" href="#top"><svg class="logo-mark" aria-hidden="true"><use href="#logo-sym"/></svg>Infinity Team</a>
         <p data-i18n="foot.about">Команда, которая делает игры, сайты и ботов.</p>
       </div>
       <p><a href="https://t.me/yyfvjk" target="_blank" rel="noopener">Telegram: @yyfvjk</a></p>

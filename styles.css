@@ -1,20 +1,25 @@
-/* Infinity Team — лендинг. Цвета взяты из классической палитры Roblox (BrickColor). */
+/* Infinity Team — лендинг. Палитра «ночное небо»: глубокий синий, белый и жёлтый, как луна. */
 :root {
-  --ink: #1B2A35;          /* BrickColor «Black» */
-  --ink-soft: #4A5964;
-  --plate: #F8F8F8;        /* «Institutional white» — фон, как baseplate в Studio */
+  --night-900: #0A1745;    /* самый тёмный край неба */
+  --night-700: #14307F;    /* основной синий — логотип, акценты */
+  --night-500: #2850B0;    /* светлый край неба */
+  --sky-200: #C9D6F5;      /* светлый текст на тёмном */
+  --sky-300: #9FB3E6;
+  --ink: #0E1B45;          /* текст на светлом */
+  --ink-soft: #4A5677;
+  --muted: #6B7591;        /* мелкий серый текст — читается на белом */
+  --paper: #F5F7FC;        /* светлые разделы */
   --panel: #FFFFFF;
-  --stone: #A3A2A5;        /* «Medium stone grey» */
-  --stone-text: #6E6F73;   /* серый для мелкого текста — читается на белом */
-  --line: #DCDCDE;
-  --red: #C4281C;          /* «Bright red» */
-  --red-hover: #AE2318;
-  --red-shadow: #7E1A12;
-  --yellow: #F5CD30;       /* «Bright yellow» */
-  --blue: #0D69AC;         /* «Bright blue» */
-  --green: #4B974B;        /* «Bright green» */
-  --lime: #A4BD47;         /* «Br. yellowish green» */
-  --grid: rgba(163, 162, 165, 0.26);
+  --line: #DDE3F1;
+  --moon: #F5CD30;         /* жёлтый — кнопки и звёзды */
+  --moon-hover: #FFD84A;
+  --moon-shadow: #B8921A;
+  /* игровые цвета (кубики) */
+  --c-green: #4B974B;
+  --c-blue: #0D69AC;
+  --c-red: #C4281C;
+  --c-lime: #A4BD47;
+  --c-stone: #A3A2A5;
 
   --font-display: "Dela Gothic One", "Arial Black", Impact, sans-serif;
   --font-body: "Onest", system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -28,7 +33,7 @@ html { scroll-behavior: smooth; }
 
 body {
   margin: 0;
-  background: var(--plate);
+  background: var(--paper);
   color: var(--ink);
   font-family: var(--font-body);
   font-size: 1.0625rem;
@@ -45,7 +50,7 @@ h1, h2 {
 
 h3 { margin: 0; font-size: 1.125rem; font-weight: 700; line-height: 1.3; }
 p { margin: 0; }
-a { color: var(--blue); }
+a { color: var(--night-700); }
 
 .wrap {
   width: 100%;
@@ -55,7 +60,7 @@ a { color: var(--blue); }
 }
 
 :focus-visible {
-  outline: 3px solid var(--blue);
+  outline: 3px solid var(--moon);
   outline-offset: 3px;
   border-radius: 6px;
 }
@@ -65,8 +70,8 @@ a { color: var(--blue); }
   left: 12px;
   top: -60px;
   z-index: 100;
-  background: var(--ink);
-  color: #fff;
+  background: var(--moon);
+  color: var(--ink);
   padding: 10px 14px;
   border-radius: 8px;
 }
@@ -87,33 +92,26 @@ a { color: var(--blue); }
 }
 .btn:active { transform: translateY(4px); }
 
-.btn-red {
-  background: var(--red);
-  color: #fff;
-  box-shadow: 0 4px 0 var(--red-shadow);
-}
-.btn-red:hover { background: var(--red-hover); }
-.btn-red:active { box-shadow: 0 0 0 var(--red-shadow); }
-
-.btn-white {
-  background: #fff;
+.btn-yellow {
+  background: var(--moon);
   color: var(--ink);
-  box-shadow: 0 4px 0 var(--red-shadow);
+  box-shadow: 0 4px 0 var(--moon-shadow);
 }
-.btn-white:hover { background: #F1F1F1; }
-.btn-white:active { box-shadow: 0 0 0 var(--red-shadow); }
+.btn-yellow:hover { background: var(--moon-hover); }
+.btn-yellow:active { box-shadow: 0 0 0 var(--moon-shadow); }
 
 .btn-small { min-height: 42px; padding: 0 1rem; font-size: 0.95rem; }
 
-/* ---------- шапка ---------- */
+/* ---------- шапка (тёмная, сливается с небом) ---------- */
 .top {
   position: sticky;
   top: 0;
   z-index: 50;
-  background: rgba(248, 248, 248, 0.88);
+  background: rgba(10, 23, 69, 0.86);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  color: #fff;
 }
 .top-inner {
   display: flex;
@@ -126,33 +124,28 @@ a { color: var(--blue); }
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  color: var(--ink);
+  color: inherit;
   text-decoration: none;
   font-family: var(--font-display);
   font-size: 1.15rem;
   white-space: nowrap;
 }
 .logo-mark {
-  display: inline-grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 8px;
-  background: var(--red);
-  color: #fff;
-  font-size: 1.35rem;
-  line-height: 1;
-  box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.18);
+  width: 36px;
+  height: 36px;
+  flex: none;
+  border-radius: 10px;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.14);
 }
 
 .nav { display: flex; gap: 24px; margin-left: 8px; }
 .nav a {
-  color: var(--ink-soft);
+  color: var(--sky-200);
   text-decoration: none;
   font-weight: 500;
   font-size: 0.98rem;
 }
-.nav a:hover { color: var(--ink); }
+.nav a:hover { color: #fff; }
 
 .top-actions { display: flex; align-items: center; gap: 14px; margin-left: auto; }
 
@@ -160,36 +153,41 @@ a { color: var(--blue); }
   display: inline-flex;
   padding: 3px;
   border-radius: 9px;
-  background: #ECECEE;
+  background: rgba(255, 255, 255, 0.1);
 }
 .lang button {
   border: 0;
   background: transparent;
-  color: var(--ink-soft);
+  color: var(--sky-200);
   font: 600 0.85rem/1 var(--font-body);
   padding: 8px 10px;
   border-radius: 7px;
   cursor: pointer;
 }
-.lang button[aria-pressed="true"] {
-  background: #fff;
-  color: var(--ink);
-  box-shadow: 0 1px 2px rgba(27, 42, 53, 0.12);
-}
+.lang button[aria-pressed="true"] { background: #fff; color: var(--ink); }
 
-/* ---------- первый экран: baseplate из Studio + остров ---------- */
+/* ---------- первый экран: ночное небо, звёзды и парящий остров ---------- */
 .hero {
-  background-color: var(--plate);
-  background-image:
-    linear-gradient(var(--grid) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
-  background-size: 32px 32px;
-  background-position: -1px -1px;
-  border-bottom: 1px solid var(--line);
+  position: relative;
+  overflow: hidden;
+  color: #fff;
+  background:
+    radial-gradient(1100px 620px at 78% 32%, rgba(92, 140, 236, 0.38), transparent 62%),
+    radial-gradient(900px 520px at 12% 88%, rgba(44, 86, 196, 0.42), transparent 64%),
+    radial-gradient(700px 380px at 40% 10%, rgba(30, 60, 150, 0.5), transparent 70%),
+    linear-gradient(165deg, var(--night-900) 0%, var(--night-700) 52%, var(--night-500) 100%);
+}
+.stars {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
 }
 .hero-inner {
+  position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   align-items: center;
   gap: 32px;
   min-height: min(calc(100svh - 73px), 940px);
@@ -199,6 +197,7 @@ a { color: var(--blue); }
 .hero h1 {
   font-size: clamp(2.1rem, 5.1vw, 4.4rem);
   line-height: 1.04;
+  text-shadow: 0 2px 24px rgba(6, 14, 46, 0.45);
 }
 .nw { white-space: nowrap; }
 .lead {
@@ -206,7 +205,7 @@ a { color: var(--blue); }
   max-width: 34rem;
   font-size: 1.2rem;
   line-height: 1.55;
-  color: var(--ink-soft);
+  color: var(--sky-200);
 }
 .hero-actions {
   display: flex;
@@ -216,29 +215,27 @@ a { color: var(--blue); }
   margin-top: 34px;
 }
 .text-link {
-  color: var(--ink);
+  color: #fff;
   font-weight: 600;
   text-decoration: underline;
   text-decoration-thickness: 2px;
   text-underline-offset: 5px;
-  text-decoration-color: var(--stone);
+  text-decoration-color: rgba(255, 255, 255, 0.4);
 }
-.text-link:hover { text-decoration-color: var(--ink); }
-.note { margin-top: 22px; font-size: 0.95rem; color: var(--ink-soft); }
+.text-link:hover { text-decoration-color: #fff; }
+.note { margin-top: 22px; font-size: 0.95rem; color: var(--sky-300); }
 
 .hero-art { display: flex; justify-content: center; }
-.island { width: 100%; max-width: 560px; height: auto; overflow: visible; }
+.island { width: 100%; max-width: 600px; height: auto; overflow: visible; }
 
-/* блоки острова падают по слоям — единственная анимация на странице */
-.island .b { opacity: 0; }
-.island.built .b {
-  animation: drop 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.25) both;
-  animation-delay: var(--d);
-}
-@keyframes drop {
-  from { opacity: 0; transform: translateY(-70px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
+/* блок «вырастает» из своего низа, а не из угла картинки */
+.island .b { transform-box: fill-box; transform-origin: 50% 100%; }
+
+/* окна компаний загораются, когда стройка закончена */
+.island .win polygon { transition: fill 0.6s ease; }
+.island.lit .win .t { fill: #FFE27A; }
+.island.lit .win .l { fill: #F5CD30; }
+.island.lit .win .r { fill: #D9AE14; }
 
 /* ---------- что входит в игру: панель Explorer ---------- */
 .game { padding-block: 104px; }
@@ -284,7 +281,7 @@ a { color: var(--blue); }
   grid-template-columns: 22px minmax(0, 1fr);
   gap: 14px;
   padding: 16px 0;
-  border-bottom: 1px solid #EFEFF0;
+  border-bottom: 1px solid #EEF1F8;
 }
 .explorer-tree li:last-child { border-bottom: 0; }
 .explorer-tree li::before {   /* ветка дерева */
@@ -300,7 +297,7 @@ a { color: var(--blue); }
   display: block;
   font-size: 0.86rem;
   font-weight: 500;
-  color: var(--stone-text);
+  color: var(--muted);
   margin-bottom: 2px;
 }
 .explorer-tree p { margin-top: 4px; color: var(--ink-soft); max-width: 46ch; }
@@ -314,13 +311,13 @@ a { color: var(--blue); }
   box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.2), inset 0 3px 0 rgba(255, 255, 255, 0.3);
   flex: none;
 }
-.cube-ink { background: var(--ink); }
-.cube-green { background: var(--green); }
-.cube-blue { background: var(--blue); }
-.cube-yellow { background: var(--yellow); }
-.cube-red { background: var(--red); }
-.cube-lime { background: var(--lime); }
-.cube-stone { background: var(--stone); }
+.cube-ink { background: var(--night-700); }
+.cube-green { background: var(--c-green); }
+.cube-blue { background: var(--c-blue); }
+.cube-yellow { background: var(--moon); }
+.cube-red { background: var(--c-red); }
+.cube-lime { background: var(--c-lime); }
+.cube-stone { background: var(--c-stone); }
 
 /* ---------- как идёт работа: настоящая последовательность ---------- */
 .how {
@@ -353,7 +350,7 @@ a { color: var(--blue); }
   width: 48px;
   height: 48px;
   border-radius: 10px;
-  background: var(--yellow);
+  background: var(--moon);
   color: var(--ink);
   font-family: var(--font-display);
   font-size: 1.35rem;
@@ -395,13 +392,18 @@ a { color: var(--blue); }
   border-radius: 3px;
   box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.2);
 }
-.group-code li::before { background: var(--blue); }
-.group-creative li::before { background: var(--red); }
+.group-code li::before { background: var(--night-700); }
+.group-creative li::before { background: var(--moon); }
 .service-group strong { font-size: 1.08rem; }
 .service-group span { color: var(--ink-soft); margin-top: 2px; }
 
-/* ---------- призыв ---------- */
-.cta { background: var(--red); color: #fff; }
+/* ---------- призыв (ночное небо) ---------- */
+.cta {
+  color: #fff;
+  background:
+    radial-gradient(700px 300px at 85% 20%, rgba(92, 140, 236, 0.35), transparent 65%),
+    linear-gradient(165deg, var(--night-900), var(--night-700));
+}
 .cta-inner {
   display: flex;
   align-items: center;
@@ -411,7 +413,7 @@ a { color: var(--blue); }
   padding-block: 64px;
 }
 .cta h2 { font-size: clamp(1.7rem, 3.2vw, 2.5rem); line-height: 1.1; max-width: 20ch; }
-.cta p { margin-top: 12px; font-size: 1.1rem; color: rgba(255, 255, 255, 0.88); max-width: 36rem; }
+.cta p { margin-top: 12px; font-size: 1.1rem; color: var(--sky-200); max-width: 36rem; }
 
 /* ---------- подвал ---------- */
 .foot { padding-block: 48px 56px; }
@@ -422,16 +424,16 @@ a { color: var(--blue); }
   font-size: 0.95rem;
   color: var(--ink-soft);
 }
-.logo-foot { font-size: 1.05rem; margin-bottom: 10px; }
-.foot-legal { font-size: 0.85rem; color: var(--stone-text); }
+.logo-foot { color: var(--ink); font-size: 1.05rem; margin-bottom: 10px; }
+.foot-legal { font-size: 0.85rem; color: var(--muted); }
 .foot a { color: var(--ink); }
 
 /* ---------- адаптив ---------- */
 @media (max-width: 980px) {
   .nav { display: none; }
-  .hero-inner { grid-template-columns: 1fr; min-height: 0; padding-block: 40px 56px; }
+  .hero-inner { grid-template-columns: 1fr; min-height: 0; padding-block: 40px 48px; }
   .hero-art { order: 2; }
-  .island { max-width: 440px; }
+  .island { max-width: 480px; }
   .game-inner { grid-template-columns: 1fr; gap: 32px; }
   .game-intro { position: static; }
   .steps { grid-template-columns: 1fr; gap: 0; }
@@ -447,7 +449,7 @@ a { color: var(--blue); }
   :root { --gutter: 16px; }
   .top-inner { gap: 12px; min-height: 64px; }
   .logo { font-size: 1rem; gap: 8px; }
-  .logo-mark { width: 30px; height: 30px; font-size: 1.15rem; }
+  .logo-mark { width: 32px; height: 32px; }
   .top-actions { gap: 8px; }
   .btn-small { padding: 0 0.8rem; min-height: 38px; font-size: 0.88rem; }
   .lead { font-size: 1.08rem; }
@@ -466,6 +468,6 @@ a { color: var(--blue); }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .island .b, .island.built .b { animation: none; opacity: 1; }
   .btn { transition: none; }
+  .island .win polygon { transition: none; }
 }
