@@ -242,6 +242,8 @@ a { color: var(--night-700); }
   transition: opacity 0.9s ease;
 }
 .scene3d.ready canvas { opacity: 1; }
+.scene3d.ready.fading canvas,
+.scene3d.fading .money-badge.on { opacity: 0; }    /* конец круга: гаснет и строится заново */
 .scene3d.no-3d { display: none; }
 .moon {
   position: absolute;

@@ -309,9 +309,10 @@
     });
     const head = new THREE.Group(); head.position.y = 4 * S; body.add(head);
     const skull = rbox(1.28 * S, 1.2 * S, 1.2 * S, 0.34 * S, skinM); skull.position.y = 0.64 * S; head.add(skull);
-    [-1, 1].forEach((side) => {
+    const eyes = [-1, 1].map((side) => {
       const eye = mesh(new THREE.SphereGeometry(0.1 * S, 10, 8), black, false);
       eye.scale.set(1, 1.5, 0.45); eye.position.set(side * 0.27 * S, 0.74 * S, 0.6 * S); head.add(eye);
+      return eye;
     });
     const smile = mesh(new THREE.TorusGeometry(0.27 * S, 0.045 * S, 6, 20, Math.PI), black, false);
     smile.rotation.z = Math.PI; smile.position.set(0, 0.56 * S, 0.6 * S); head.add(smile);
@@ -330,7 +331,7 @@
       head.add(brim, crown, band);
     }
     root.traverse((o) => { if (o.isMesh) o.castShadow = true; });
-    return { root, body, legs, arms, head };
+    return { root, body, legs, arms, head, eyes };
   }
 
   const builderA = avatar({ skin: "#F5CD30", shirt: "#2D6FD0", pants: "#33486E", hat: "hardhat", vest: true });
@@ -375,6 +376,32 @@
   const pile = new THREE.InstancedMesh(coinGeo, goldMat, PILE_MAX); pile.count = 0; pile.castShadow = true; scene.add(pile);
   const sparkles = Array.from({ length: 6 }, () => { const s = glow("#FFF6D8", 0.35, 0); scene.add(s); return s; });
 
+  // пыль, когда этаж встаёт на место
+  const dust = Array.from({ length: 10 }, () => {
+    const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: "#AEB7CB", transparent: true, opacity: 0, depthWrite: false }));
+    scene.add(s); return s;
+  });
+
+  // готовые игры вылетают из студии: цветные иконки с кнопкой «играть»
+  const playShape = new THREE.Shape();
+  playShape.moveTo(-0.07, -0.095); playShape.lineTo(0.1, 0); playShape.lineTo(-0.07, 0.095); playShape.closePath();
+  const playGeo = new THREE.ShapeGeometry(playShape);
+  playGeo.scale(1.45, 1.45, 1);
+  const tileGeo = new RoundedBoxGeometry(0.68, 0.68, 0.12, 3, 0.13);
+  const games = ["#FF5A4E", "#2FB65A", "#3D8BFF", "#F5C430", "#B05CFF", "#FF8A2A"].map((c) => {
+    const g = new THREE.Group();
+    const tile = new THREE.Mesh(tileGeo, new THREE.MeshStandardMaterial({ color: c, emissive: c, emissiveIntensity: 0.45, roughness: 0.35, transparent: true }));
+    const play = new THREE.Mesh(playGeo, new THREE.MeshBasicMaterial({ color: "#FFFFFF", transparent: true }));
+    play.position.z = 0.062;
+    g.add(tile, play); g.visible = false; scene.add(g);
+    return { g, mats: [tile.material, play.material] };
+  });
+  const gameDir = [-1, 0.4, -0.4, 1, -0.7, 0.7];        // в какую сторону летит каждая иконка
+
+  // светлячки у деревьев
+  const flies = [[-4.5, 1.6], [-3.1, 4.1], [4.4, -1.9], [-4.4, -2.6], [2.9, 4.9], [-5.1, 2.6], [5.3, 0.4], [-2.3, 2.3], [1.4, -4.8], [3.8, 3.4]]
+    .map(([x, z]) => { const s = glow("#E9FF9E", 0.26, 0); s.userData = { x, z, ph: rnd() * 6.28 }; scene.add(s); return s; });
+
   /* ---------- расстановка и сценарий ---------- */
   // клиент и строитель встают друг напротив друга поперёк взгляда камеры — видно лица в три четверти
   const clientPos = new THREE.Vector3(4.0, 0, 1.95);
@@ -387,7 +414,8 @@
     return Math.atan2(d.x + k * Math.SQRT1_2, d.y + k * Math.SQRT1_2);
   };
   client.root.position.copy(clientPos);
-  client.root.rotation.y = toCam(clientPos, A1);
+  const CLIENT_YAW = toCam(clientPos, A1);
+  client.root.rotation.y = CLIENT_YAW;
 
   const T = { build: 0.7, piece: 0.7 };
   T.done = T.build + pieces.length * T.piece;
@@ -396,18 +424,29 @@
   T.give = T.walk + 1.5;
   T.coins = T.give + 0.8;
   const END = T.coins + 4;
+  const LOOP = END + 11;                              // потом плавно гаснет и строится заново
+  const G_EVERY = 0.85, G_LIFE = 2.4;                 // иконки игр: как часто вылетают и сколько живут
+  const CAM_YAW = Math.atan2(camOffset.x, camOffset.z);
+  // шаг подобран так, чтобы ноги остановились ровно, без рывка
+  const STRIDE_A = (8 * Math.PI) / A0.distanceTo(A1), STRIDE_B = (3 * Math.PI) / B0.distanceTo(B1);
 
   const coinStart = new THREE.Vector3(0.2, 0.75, W / 2 + 0.35);
-  const tmpA = new THREE.Vector3(), tmpB = new THREE.Vector3(), mtx = new THREE.Matrix4(), q = new THREE.Quaternion();
+  const tmpA = new THREE.Vector3(), tmpB = new THREE.Vector3(), look = new THREE.Vector3(), mtx = new THREE.Matrix4(), q = new THREE.Quaternion();
   let total = 0, lastCoin = -1;
-  const fmt = () => new Intl.NumberFormat(document.documentElement.lang === "en" ? "en-US" : "ru-RU").format(total);
+  const fmt = () => new Intl.NumberFormat({ en: "en-US", uk: "uk-UA" }[document.documentElement.lang] || "ru-RU").format(total);
 
-  function pose(av, { walk = 0, armR = null, armL = null, bob = 0 }) {
+  function pose(av, { walk = 0, armR = null, armL = null, bob = 0, lean = 0 }) {
     const sw = Math.sin(walk) * 0.65;
     av.legs[0].rotation.x = sw; av.legs[1].rotation.x = -sw;
     av.arms[0].rotation.set(armR ? armR[0] : -sw * 0.8, 0, armR ? armR[1] : 0);
     av.arms[1].rotation.set(armL ? armL[0] : sw * 0.8, 0, armL ? armL[1] : 0);
     av.body.position.y = bob;
+    av.body.rotation.x = lean;                        // при ходьбе чуть наклоняется вперёд
+  }
+
+  function blink(av, t, ph) {                         // моргают раз в несколько секунд
+    const closed = (t + ph) % 3.3 < 0.12;
+    av.eyes.forEach((e) => { e.scale.y = closed ? 0.25 : 1.5; });
   }
 
   function addPileCoin() {
@@ -420,13 +459,14 @@
   }
 
   function update(t, dt) {
-    // камера медленно покачивается
-    const sway = Math.sin(t * 0.17) * 0.09;
+    // камера медленно покачивается, а остров плавно «парит» вверх-вниз
+    const sway = Math.sin(t * 0.17) * 0.09, float = Math.sin(t * 0.8) * 0.16;
     camera.position.copy(camOffset).applyAxisAngle(UP, sway).add(target);
-    camera.lookAt(target);
+    camera.position.y -= float;
+    camera.lookAt(look.copy(target).setY(target.y - float));
 
     // стройка: кран опускает этажи один за другим
-    let hookY = HOOK_REST, holding = null;
+    let hookY = HOOK_REST, holding = null, landed = null;
     pieces.forEach((p, i) => {
       const t0 = T.build + i * T.piece;
       const startY = HOOK_REST - 0.55 - p.userData.height;
@@ -435,12 +475,22 @@
       const k = clamp01((t - t0) / (T.piece * 0.62));
       p.position.y = lerp(startY, p.userData.targetY, easeOut(k));
       p.scale.setScalar(t - t0 < 0.08 ? 0.6 + 5 * (t - t0) : 1);
+      const sq = t - (t0 + T.piece * 0.62);            // этаж встал на место: лёгкий «бум» и пыль
+      if (sq > 0 && sq < 0.3) { const s = Math.sin((sq / 0.3) * Math.PI); p.scale.set(1 + 0.03 * s, 1 - 0.09 * s, 1 + 0.03 * s); }
+      if (sq >= 0 && sq < 0.8) landed = { y: p.userData.targetY, k: sq / 0.8 };
       if (t < t0 + T.piece) {
         holding = p;
         const attach = p.position.y + p.userData.height + 0.55;
         const r = clamp01((t - t0 - T.piece * 0.62) / (T.piece * 0.38));
         hookY = k < 1 ? attach : lerp(attach, HOOK_REST, easeInOut(r));
       }
+    });
+    dust.forEach((d, i) => {
+      if (!landed) { d.material.opacity = 0; return; }
+      const a = (i / dust.length) * Math.PI * 2 + 0.3, k = landed.k, r = W / 2 + 0.2 + 0.9 * easeOut(k);
+      d.position.set(Math.cos(a) * r, landed.y + 0.1 + 0.35 * k, Math.sin(a) * r);
+      d.scale.setScalar(0.7 + 1.4 * k);
+      d.material.opacity = 0.8 * (1 - k);
     });
     hook.position.set(0, hookY, 0);
     const cableLen = HOOK_TOP - (hookY + 0.14);
@@ -473,6 +523,28 @@
       s.scale.setScalar(0.2 + 0.4 * Math.sin(k * Math.PI));
     });
 
+    // из готовой студии одна за другой вылетают игры
+    const gameY = roof.userData.targetY + 1.5;
+    games.forEach((gm, i) => {
+      const local = t - T.lights - 0.9 - i * G_EVERY;
+      const ph = local >= 0 ? local % (games.length * G_EVERY) : -1;
+      if (ph < 0 || ph > G_LIFE) { gm.g.visible = false; return; }
+      const k = ph / G_LIFE, a = Math.atan2(camOffset.z, camOffset.x) + gameDir[i] * 1.1, r = 0.2 + 1.6 * k;
+      gm.g.visible = true;
+      gm.g.position.set(Math.cos(a) * r, gameY + 1.6 * k, Math.sin(a) * r);
+      gm.g.rotation.set(0, CAM_YAW + Math.sin(t * 2 + i) * 0.35, Math.sin(t * 1.6 + i) * 0.12);
+      gm.g.scale.setScalar(0.35 + 0.65 * easeOut(clamp01(k / 0.2)));
+      const op = Math.max(0, Math.min(1, k / 0.12, (1 - k) / 0.3));
+      gm.mats.forEach((mm) => { mm.opacity = op; });
+    });
+
+    // светлячки
+    flies.forEach((f, i) => {
+      const { x, z, ph } = f.userData;
+      f.position.set(x + Math.sin(t * 0.5 + ph) * 0.55, 0.7 + (i % 3) * 0.35 + Math.sin(t * 0.8 + ph * 2) * 0.45, z + Math.cos(t * 0.43 + ph) * 0.55);
+      f.material.opacity = Math.max(0, Math.sin(t * 1.7 + ph * 3)) * 0.9;
+    });
+
     // строитель A: стучит молотком → берёт мешок денег → несёт клиенту → отдаёт
     const breathe = (ph) => Math.sin(t * 2.2 + ph) * 0.012;
     if (t < T.walk) {
@@ -484,7 +556,8 @@
       const k = easeInOut(clamp01((t - T.walk) / (T.give - T.walk - 0.2)));
       builderA.root.position.lerpVectors(A0, A1, k);
       builderA.root.rotation.y = k < 1 ? faceTo(A0, A1) : toCam(A1, clientPos);
-      pose(builderA, { walk: k < 1 ? t * 11 : 0, armR: [-0.5, 0], bob: k < 1 ? Math.abs(Math.sin(t * 11)) * 0.05 : breathe(0) });
+      const step = A0.distanceTo(A1) * k * STRIDE_A;    // шаги идут вместе с движением — ноги не скользят
+      pose(builderA, { walk: step, armR: [-0.5, 0], bob: k < 1 ? Math.abs(Math.sin(step)) * 0.06 : breathe(0), lean: k < 1 ? 0.1 : 0 });
       hammer.visible = false;
     } else {
       builderA.root.position.copy(A1); builderA.root.rotation.y = toCam(A1, clientPos);
@@ -506,20 +579,26 @@
       builderB.root.position.lerpVectors(B0, B1, k);
       builderB.root.rotation.y = k < 1 ? faceTo(B0, B1) : faceTo(B1, new THREE.Vector3(B1.x + 1, 0, B1.z + 1.4));
       const cheer = t > T.give + 0.6;
+      const step = B0.distanceTo(B1) * k * STRIDE_B;
       pose(builderB, k < 1
-        ? { walk: t * 11, bob: Math.abs(Math.sin(t * 11)) * 0.05 }
+        ? { walk: step, bob: Math.abs(Math.sin(step)) * 0.06, lean: 0.1 }
         : cheer ? { armR: [0, -2.6 + Math.sin(t * 6 + 1) * 0.3], armL: [0, 2.6 - Math.sin(t * 6 + 1) * 0.3], bob: Math.abs(Math.sin(t * 6 + 1)) * 0.06 }
                 : { bob: breathe(1) });
     }
 
-    // клиент: смотрит на стройку, получает мешок, радуется
+    // клиент: смотрит на стройку, получает мешок, подпрыгивает и поднимает его над головой
     const kBag = easeInOut(clamp01((t - T.give - 0.15) / 0.45));
+    const jt = t - (T.give + 0.7), jumping = jt > 0 && jt < 1.4;
+    const raise = jt <= 0 ? 0 : jt < 1.4 ? easeOut(clamp01(jt / 0.25)) : 1 - easeInOut(clamp01((jt - 1.4) / 0.5));
     pose(client, {
-      armR: [-0.12, 0],
-      armL: [lerp(0, -0.75, kBag), 0.05 * (1 - kBag)],
-      bob: t > T.give + 0.8 ? Math.abs(Math.sin(t * 5)) * 0.05 : breathe(2),
+      armR: [lerp(-0.12, -0.55, raise), 0],
+      armL: [lerp(lerp(0, -0.75, kBag), -2.6, raise), lerp(0.05 * (1 - kBag), 0.65, raise)],   // вверх и в сторону
+      bob: jumping ? Math.abs(Math.sin((jt / 0.7) * Math.PI)) * 0.3 : jt > 0 ? Math.abs(Math.sin(t * 5)) * 0.04 : breathe(2),
     });
     client.head.rotation.y = t < T.walk ? Math.sin(t * 0.6) * 0.15 : 0;
+    // получив мешок, поворачивается к зрителю — показать его, как трофей
+    client.root.rotation.y = lerp(CLIENT_YAW, CAM_YAW, easeInOut(clamp01(jt / 0.35)));
+    blink(builderA, t, 0); blink(builderB, t, 1.4); blink(client, t, 2.3);
 
     // мешок: у строителя → летит в руку клиента
     scene.updateMatrixWorld(true);
@@ -529,7 +608,7 @@
       client.arms[1].userData.anchor.getWorldPosition(tmpB);
       const k = easeInOut(clamp01((t - T.give - 0.15) / 0.45));
       bag.position.lerpVectors(tmpA, tmpB, k);
-      bag.position.y -= 0.28;
+      bag.position.y += lerp(-0.28, 0.3, raise);          // поднятый мешок — в руке над плечом, лицо не закрывает
       bag.rotation.y = lerp(builderA.root.rotation.y, client.root.rotation.y, k);
       const pop = clamp01((t - T.walk + 0.1) / 0.25);
       bag.scale.setScalar(0.4 + 0.6 * easeOut(pop));
@@ -562,7 +641,7 @@
 
     // табличка с суммой над клиентом
     if (badge) {
-      badge.classList.toggle("on", t > T.coins - 0.4);
+      badge.classList.toggle("on", t > T.give + 2.5);   // когда клиент опустил мешок — табличка его не заслоняет
       tmpA.copy(clientPos).add(tmpB.set(0, 2.55, 0)).project(camera);
       badge.style.transform = `translate(${((tmpA.x + 1) / 2) * host.clientWidth}px, ${((1 - tmpA.y) / 2) * host.clientHeight}px) translate(-50%, -100%)`;
     }
@@ -578,18 +657,27 @@
     camera.updateProjectionMatrix();
   }
   resize();
-  new ResizeObserver(() => { resize(); if (reduce) render(END); }).observe(host);
+  new ResizeObserver(() => { resize(); if (reduce || still !== null) render(still ?? END); }).observe(host);
 
-  const startAt = Number(new URLSearchParams(location.search).get("t")) || 0;   // для проверки кадров: ?t=8
+  // для проверки кадров: ?t=8 — играть с 8-й секунды, ?still=9.9 — один застывший кадр
+  const params = new URLSearchParams(location.search);
+  const startAt = Number(params.get("t")) || 0;
+  const still = params.has("still") ? Number(params.get("still")) : null;
   function render(t) { update(t, 0); renderer.render(scene, camera); }
 
-  if (reduce) {
+  if (reduce || still !== null) {
     for (let i = 0; i < 18; i++) addPileCoin();
     total = 0;
     if (badge) badge.textContent = "$ ∞";
-    render(END);
+    render(still ?? END);
     host.classList.add("ready");
     return;
+  }
+
+  function restart() {                               // новый круг: стройка заново, сумма денег копится дальше
+    pile.count = 0; pile.instanceMatrix.needsUpdate = true;
+    flying.forEach((c) => { c.t0 = -1; c.mesh.visible = false; });
+    lastCoin = -1;
   }
 
   let time = startAt, last = performance.now(), visible = true;
@@ -599,6 +687,8 @@
     const dt = Math.min((now - last) / 1000, 0.05); last = now;
     if (!visible || document.hidden) return;
     time += dt;
+    if (time > LOOP - 0.9) host.classList.add("fading");   // CSS плавно гасит сцену за 0.9 с
+    if (time > LOOP) { time = 0; restart(); host.classList.remove("fading"); }
     update(time, dt);
     renderer.render(scene, camera);
   }
