@@ -52,7 +52,7 @@
   scene.add(warm);
 
   const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 200);
-  const target = new THREE.Vector3(0.8, 3.55, 0.8);
+  const target = new THREE.Vector3(0.8, 3.8, 0.8);
   const camOffset = new THREE.Vector3(16.0, 9.0, 16.9);
   const UP = new THREE.Vector3(0, 1, 0);
 
@@ -220,61 +220,175 @@
   const towerGlow = glow("#FFD58A", 9, 0); towerGlow.position.set(0, 3.6, 0); tower.add(towerGlow);
 
   /* ---------- башенный кран ---------- */
+  // Как настоящий: решётчатая мачта на бетонном основании, поворотный круг, кабина крановщика,
+  // оголовок-пирамида с растяжками, стрела-ферма с тележкой, противовесная консоль с плитами и лебёдкой.
   const craneMat = std("#F5C430", { roughness: 0.45, metalness: 0.35 });
+  const steelMat = std("#3A4258", { roughness: 0.5, metalness: 0.6 });
+  const V = (x, y, z) => new THREE.Vector3(x, y, z);
+  const strut = (list, a, b, th) => {                 // брус от точки a до точки b (для ферм)
+    const dir = new THREE.Vector3().subVectors(b, a), len = dir.length();
+    const g = new THREE.BoxGeometry(th, len, th);
+    g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(UP, dir.normalize()));
+    g.translate((a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2);
+    list.push(g);
+  };
   // кран слева от здания (с точки зрения зрителя), стрела тянется к центру крыши
   const CRANE = new THREE.Vector3(-3.0, 0, 0.25);
   const crane = new THREE.Group(); crane.position.copy(CRANE); scene.add(crane);
-  const CH = 9.0;
-  const parts = [];
-  const beam = (len, thick, at, rot) => {
-    const g = new THREE.BoxGeometry(thick, len, thick);
-    if (rot) g.rotateZ(rot.z || 0).rotateX(rot.x || 0).rotateY(rot.y || 0);
-    g.translate(at[0], at[1], at[2]); parts.push(g);
-  };
-  const m = 0.26, step = 0.6;                       // решётчатая мачта
-  [[-m, -m], [m, -m], [m, m], [-m, m]].forEach(([x, z]) => beam(CH, 0.07, [x, CH / 2, z]));
-  const diag = Math.hypot(2 * m, step), ang = Math.atan2(2 * m, step);
-  for (let y = 0; y < CH - 0.3; y += step) {
-    [[0, -m, "x"], [0, m, "x"], [-m, 0, "z"], [m, 0, "z"]].forEach(([x, z, axis], i) => {
-      const flip = (Math.round(y / step) + i) % 2 ? 1 : -1;
-      if (axis === "x") beam(diag, 0.035, [x, y + step / 2, z], { z: ang * flip });
-      else beam(diag, 0.035, [x, y + step / 2, z], { x: ang * flip });
+  const CH = 8.75;
+
+  // бетонное основание и мачта из секций
+  const footing = box(1.3, 0.3, 1.3, std("#9AA1AE", { roughness: 0.95 })); footing.position.y = 0.15; crane.add(footing);
+  const mastParts = [];
+  const M = 0.3, SEC = 0.75, MAST0 = 0.3;
+  const mc = [[-M, -M], [M, -M], [M, M], [-M, M]];
+  mc.forEach(([x, z]) => strut(mastParts, V(x, MAST0, z), V(x, CH, z), 0.08));
+  for (let y = MAST0, s = 0; y < CH - 0.01; y += SEC, s++) {
+    const y2 = Math.min(y + SEC, CH);
+    mc.forEach(([x, z], i) => {
+      const [nx, nz] = mc[(i + 1) % 4];
+      strut(mastParts, V(x, y, z), V(nx, y, nz), 0.04);                       // горизонталь секции
+      if ((s + i) % 2) strut(mastParts, V(x, y, z), V(nx, y2, nz), 0.032);    // диагональ «зигзагом»
+      else strut(mastParts, V(nx, y, nz), V(x, y2, z), 0.032);
     });
   }
-  crane.add(mesh(mergeGeometries(parts), craneMat));
+  mc.forEach(([x, z]) => strut(mastParts, V(x * 1.7, MAST0, z * 1.7), V(x, 1.0, z), 0.06));   // упоры у основания
+  crane.add(mesh(mergeGeometries(mastParts), craneMat));
+  const ring = mesh(new THREE.CylinderGeometry(0.46, 0.46, 0.14, 28), steelMat); ring.position.y = CH + 0.07; crane.add(ring);
 
-  const JIB_YAW = Math.atan2(CRANE.z, -CRANE.x);       // локальная +x стрелы смотрит на центр здания
-  const top = new THREE.Group(); top.position.y = CH; top.rotation.y = JIB_YAW; crane.add(top);
-  const REACH = Math.hypot(CRANE.x, CRANE.z), JIB = REACH + 1.4;
-  const jparts = [];
-  const jb = (len, thick, at, rotZ = 0, rotY = 0) => {
-    const g = new THREE.BoxGeometry(len, thick, thick); g.rotateZ(rotZ).rotateY(rotY); g.translate(...at); jparts.push(g);
-  };
-  jb(JIB, 0.07, [JIB / 2, 0, 0.22]); jb(JIB, 0.07, [JIB / 2, 0, -0.22]); jb(JIB, 0.07, [JIB / 2, 0.42, 0]);
-  for (let x = 0; x < JIB - 0.2; x += 0.5) {
-    jb(Math.hypot(0.25, 0.42) * 1.15, 0.03, [x + 0.25, 0.21, 0.11], Math.atan2(0.42, 0.25) * (Math.round(x / 0.5) % 2 ? 1 : -1), 0);
-    jb(Math.hypot(0.25, 0.42) * 1.15, 0.03, [x + 0.25, 0.21, -0.11], Math.atan2(0.42, 0.25) * (Math.round(x / 0.5) % 2 ? -1 : 1), 0);
+  // всё, что выше поворотного круга, поворачивается вместе: локальная +x смотрит на центр здания
+  const JIB_YAW = Math.atan2(CRANE.z, -CRANE.x);
+  const top = new THREE.Group(); top.position.y = CH + 0.14; top.rotation.y = JIB_YAW; crane.add(top);
+  const REACH = Math.hypot(CRANE.x, CRANE.z), JIB = REACH + 1.4, CJ = 2.3;
+  const tp = [], sp = [];                             // жёлтые фермы и стальные детали — сливаем в два меша
+  const deck = box(1.1, 0.1, 0.9, steelMat); deck.position.y = 0.05; top.add(deck);
+
+  // стрела: треугольная ферма, к концу сужается
+  const J0 = 0.4, JB = 0.13, JH = 0.64, JZ = 0.24, PAN = 0.45;
+  const jibTop = (x) => (x <= JIB - PAN ? JH : lerp(JH, JB + 0.08, (x - (JIB - PAN)) / PAN));
+  [-JZ, JZ].forEach((z) => strut(tp, V(J0, JB, z), V(JIB, JB, z), 0.07));
+  strut(tp, V(J0, JH, 0), V(JIB - PAN, JH, 0), 0.07);
+  strut(tp, V(JIB - PAN, JH, 0), V(JIB, JB + 0.08, 0), 0.07);
+  for (let x = J0; x < JIB - 0.01; x += PAN) {
+    const x2 = Math.min(x + PAN, JIB), xm = (x + x2) / 2;
+    [-JZ, JZ].forEach((z) => {                        // боковые грани
+      strut(tp, V(x, JB, z), V(xm, jibTop(xm), 0), 0.035);
+      strut(tp, V(xm, jibTop(xm), 0), V(x2, JB, z), 0.035);
+    });
+    strut(tp, V(x, JB, -JZ), V(x, JB, JZ), 0.035);    // низ: поперечины и диагонали
+    strut(tp, V(x, JB, -JZ), V(x2, JB, JZ), 0.03);
   }
-  jb(1.9, 0.08, [-0.95, 0, 0.2]); jb(1.9, 0.08, [-0.95, 0, -0.2]);
-  top.add(mesh(mergeGeometries(jparts), craneMat));
-  const weight = box(0.6, 0.55, 0.62, std("#8C93A3", { roughness: 0.9 })); weight.position.set(-1.6, -0.25, 0); top.add(weight);
-  const cab = rbox(0.6, 0.48, 0.55, 0.06, craneMat); cab.position.set(0.15, -0.36, 0.42); top.add(cab);
-  const cabGlass = box(0.04, 0.3, 0.42, glassMat, false); cabGlass.position.set(0.46, -0.33, 0.42); top.add(cabGlass);
-  const apex = mesh(new THREE.ConeGeometry(0.32, 1.3, 4), craneMat); apex.position.y = 0.95; apex.rotation.y = Math.PI / 4; top.add(apex);
-  [[JIB * 0.75, 0.42], [-1.6, 0]].forEach(([x, y]) => {        // растяжки от вершины
-    const a = new THREE.Vector3(0, 1.55, 0), b = new THREE.Vector3(x, y, 0);
-    const len = a.distanceTo(b);
-    const tie = mesh(new THREE.CylinderGeometry(0.015, 0.015, len, 5), std("#3A4258", { metalness: 0.6 }));
-    tie.position.copy(a).add(b).multiplyScalar(0.5);
-    tie.quaternion.setFromUnitVectors(UP, b.clone().sub(a).normalize()); top.add(tie);
+  strut(tp, V(JIB, JB, -JZ), V(JIB, JB, JZ), 0.05);
+
+  // противовесная консоль: площадка с перилами
+  const CB = 0.13, CZ = 0.3, RAIL = 0.32;
+  [-CZ, CZ].forEach((z) => strut(tp, V(-0.4, CB, z), V(-CJ, CB, z), 0.08));
+  for (let x = -0.4; x > -CJ + 0.01; x -= 0.38) {
+    strut(tp, V(x, CB, -CZ), V(x, CB, CZ), 0.04);
+    strut(tp, V(x, CB, -CZ), V(Math.max(x - 0.38, -CJ), CB, CZ), 0.03);
+    [-CZ, CZ].forEach((z) => strut(sp, V(x, CB, z), V(x, CB + RAIL, z), 0.025));     // стойки перил
+  }
+  strut(tp, V(-CJ, CB, -CZ), V(-CJ, CB, CZ), 0.06);
+  [-CZ, CZ].forEach((z) => strut(sp, V(-0.4, CB + RAIL, z), V(-CJ, CB + RAIL, z), 0.025));   // перила
+  const walk = box(CJ - 0.4, 0.025, CZ * 2 - 0.06, steelMat, false); walk.position.set(-(CJ + 0.4) / 2, CB + 0.03, 0); top.add(walk);
+
+  // оголовок: решётчатая пирамида над поворотным кругом
+  const APEX = V(0, 1.35, 0);
+  const legs = [[-0.32, -0.3], [0.32, -0.3], [0.32, 0.3], [-0.32, 0.3]].map(([x, z]) => V(x, 0.1, z));
+  legs.forEach((p) => strut(tp, p, APEX, 0.065));
+  [0.32, 0.62].forEach((k) => {                       // два пояса и диагонали между ними
+    const pts = legs.map((p) => p.clone().lerp(APEX, k));
+    pts.forEach((p, i) => strut(tp, p, pts[(i + 1) % 4], 0.035));
   });
-  const trolley = box(0.4, 0.14, 0.5, std("#3A4258", { metalness: 0.5 })); trolley.position.set(REACH, -0.1, 0); top.add(trolley);
+  legs.forEach((p, i) => strut(tp, p, legs[(i + 1) % 4].clone().lerp(APEX, 0.32), 0.03));
+  const head = box(0.16, 0.14, 0.16, steelMat); head.position.copy(APEX); top.add(head);
+
+  // растяжки от оголовка к стреле и к концу консоли
+  [JIB * 0.5, JIB - PAN].forEach((x) => strut(sp, APEX, V(x, JH, 0), 0.024));
+  [-CZ, CZ].forEach((z) => strut(sp, APEX, V(-CJ + 0.12, CB + RAIL, z), 0.024));
+  top.add(mesh(mergeGeometries(tp), craneMat), mesh(mergeGeometries(sp), steelMat));
+
+  // противовес — бетонные плиты, и лебёдка с барабаном
+  const cwMat = std("#A7ADB9", { roughness: 0.95 });
+  [0, 1, 2].forEach((i) => {
+    const s = box(0.17, 0.82, 0.66, cwMat); s.position.set(-CJ + 0.12 + i * 0.19, CB - 0.2, 0); top.add(s);
+  });
+  const winch = box(0.5, 0.36, 0.46, steelMat); winch.position.set(-1.1, CB + 0.22, 0); top.add(winch);
+  const drum = mesh(new THREE.CylinderGeometry(0.13, 0.13, 0.44, 16), std("#5B6478", { metalness: 0.7, roughness: 0.35 }));
+  drum.rotation.x = Math.PI / 2; drum.position.set(-0.68, CB + 0.17, 0); top.add(drum);
+
+  // табличка с логотипом на перилах консоли — к зрителю
+  const plateTex = (() => {
+    const c = document.createElement("canvas"); c.width = 512; c.height = 128;
+    const g = c.getContext("2d");
+    g.fillStyle = "#14307F"; g.fillRect(0, 0, 512, 128);
+    g.strokeStyle = "#F5CD30"; g.lineWidth = 10; g.strokeRect(5, 5, 502, 118);
+    g.fillStyle = "#FFFFFF"; g.font = "bold 72px Arial, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle";
+    g.fillText("∞ INFINITY", 256, 68);
+    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t;
+  })();
+  const plate = new THREE.Mesh(new THREE.PlaneGeometry(1.25, 0.31), new THREE.MeshStandardMaterial({ map: plateTex, roughness: 0.6 }));
+  plate.position.set(-1.3, CB + 0.2, CZ + 0.02); top.add(plate);
+
+  // кабина крановщика: окна светятся — внутри горит свет
+  const cab = new THREE.Group(); cab.position.set(0.5, -0.12, 0.66); top.add(cab);
+  cab.add(rbox(0.62, 0.62, 0.5, 0.05, craneMat));
+  const cabGlassMat = new THREE.MeshStandardMaterial({ color: "#22355F", emissive: "#FFC98A", emissiveIntensity: 0.32, roughness: 0.12, metalness: 0.4 });
+  const cabFront = new THREE.Mesh(new THREE.PlaneGeometry(0.36, 0.34), cabGlassMat);
+  cabFront.position.set(0.312, 0.08, 0); cabFront.rotation.y = Math.PI / 2;
+  const cabSide = new THREE.Mesh(new THREE.PlaneGeometry(0.38, 0.26), cabGlassMat); cabSide.position.set(0.04, 0.1, 0.252);
+  const cabRoof = box(0.68, 0.05, 0.56, std("#FFE27A", { roughness: 0.4 })); cabRoof.position.y = 0.335;
+  const cabArm = box(0.3, 0.1, 0.3, steelMat); cabArm.position.set(-0.05, 0.25, -0.35);       // кронштейн к платформе
+  cab.add(cabFront, cabSide, cabRoof, cabArm);
+
+  // тележка на нижних поясах стрелы
+  const trolley = new THREE.Group(); trolley.position.set(REACH, JB - 0.12, 0); top.add(trolley);
+  trolley.add(box(0.44, 0.08, 0.62, steelMat));
+  [-1, 1].forEach((sx) => [-JZ, JZ].forEach((z) => {
+    const w = mesh(new THREE.CylinderGeometry(0.045, 0.045, 0.04, 12), steelMat);
+    w.rotation.x = Math.PI / 2; w.position.set(sx * 0.14, 0.2, z); trolley.add(w);
+  }));
+  const sheave = mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.16, 14), std("#5B6478", { metalness: 0.7 }));
+  sheave.rotation.x = Math.PI / 2; sheave.position.y = -0.08; trolley.add(sheave);
+
+  // красные огни на макушке, конце стрелы и консоли — мигают вместе с огнём на крыше
+  const craneLights = [V(0, APEX.y + 0.12, 0), V(JIB + 0.03, JB + 0.1, 0), V(-CJ, CB + RAIL + 0.1, 0)].map((p) => {
+    const l = mesh(new THREE.SphereGeometry(0.06, 10, 8), redMat, false); l.position.copy(p);
+    const g = glow("#FF4A3A", 0.75, 0); g.position.copy(p);
+    top.add(l, g); return g;
+  });
+
+  // двойной трос и крюковая обойма в жёлто-чёрную полоску
   const cableMat = std("#2A3145", { metalness: 0.5 });
-  const cable = mesh(new THREE.CylinderGeometry(0.018, 0.018, 1, 5), cableMat, false); scene.add(cable);
+  const cable = new THREE.Group(); scene.add(cable);
+  [-0.06, 0.06].forEach((z) => { const c = mesh(new THREE.CylinderGeometry(0.014, 0.014, 1, 5), cableMat, false); c.position.z = z; cable.add(c); });
+  const stripeTex = (() => {
+    const c = document.createElement("canvas"); c.width = c.height = 64;
+    const g = c.getContext("2d"); g.fillStyle = "#F5C430"; g.fillRect(0, 0, 64, 64);
+    g.fillStyle = "#1D2230";
+    for (let i = 0; i < 160; i += 32) { g.beginPath(); g.moveTo(i, 0); g.lineTo(i + 16, 0); g.lineTo(i - 48, 64); g.lineTo(i - 64, 64); g.fill(); }
+    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+  })();
   const hook = new THREE.Group(); scene.add(hook);
-  hook.add(shadowed(rbox(0.32, 0.28, 0.2, 0.04, craneMat)));
-  const hookTip = mesh(new THREE.TorusGeometry(0.09, 0.025, 6, 12, Math.PI * 1.4), cableMat); hookTip.position.y = -0.24; hook.add(hookTip);
-  const HOOK_TOP = CH - 0.2, HOOK_REST = CH - 1.15;
+  hook.add(rbox(0.34, 0.3, 0.22, 0.04, new THREE.MeshStandardMaterial({ map: stripeTex, roughness: 0.45, metalness: 0.2 })));
+  [-0.06, 0.06].forEach((z) => {
+    const s = mesh(new THREE.CylinderGeometry(0.075, 0.075, 0.03, 14), steelMat); s.rotation.x = Math.PI / 2; s.position.set(0, 0.15, z); hook.add(s);
+  });
+  const hookSteel = std("#8A93A6", { metalness: 0.85, roughness: 0.3 });
+  const shank = mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.14, 8), hookSteel); shank.position.y = -0.22; hook.add(shank);
+  const hookTip = mesh(new THREE.TorusGeometry(0.085, 0.028, 8, 16, Math.PI * 1.45), hookSteel);
+  hookTip.position.y = -0.36; hookTip.rotation.z = 1.92; hook.add(hookTip);
+  // стропы от крюка к углам этажа, пока его опускают
+  const slings = Array.from({ length: 4 }, () => { const s = mesh(new THREE.CylinderGeometry(0.012, 0.012, 1, 4), cableMat, false); s.visible = false; scene.add(s); return s; });
+  const sA = new THREE.Vector3(), sB = new THREE.Vector3(), sC = new THREE.Vector3();
+  const line = (m, a, b) => {                         // натянуть тонкий цилиндр между двумя точками
+    m.position.copy(a).add(b).multiplyScalar(0.5);
+    m.scale.y = a.distanceTo(b);
+    m.quaternion.setFromUnitVectors(UP, sB.subVectors(b, a).normalize());
+  };
+  // высоты в координатах сцены: шкив тележки, верх обоймы, кончик крюка, на сколько крюк выше груза
+  const HOOK_TOP = CH + 0.14 + (JB - 0.12) - 0.08, HOOK_CABLE = 0.17, HOOK_TIP = -0.45, ATTACH = 0.95;
+  const HOOK_REST = HOOK_TOP - 0.8;
 
   /* ---------- человечки в стиле Roblox ---------- */
   const S = 0.4;
@@ -466,10 +580,10 @@
     camera.lookAt(look.copy(target).setY(target.y - float));
 
     // стройка: кран опускает этажи один за другим
-    let hookY = HOOK_REST, holding = null, landed = null;
+    let hookY = HOOK_REST, holding = null, holdK = 1, landed = null;
     pieces.forEach((p, i) => {
       const t0 = T.build + i * T.piece;
-      const startY = HOOK_REST - 0.55 - p.userData.height;
+      const startY = HOOK_REST - ATTACH - p.userData.height;      // этаж появляется, уже висящий на крюке
       if (t < t0) { p.visible = false; return; }
       p.visible = true;
       const k = clamp01((t - t0) / (T.piece * 0.62));
@@ -479,8 +593,8 @@
       if (sq > 0 && sq < 0.3) { const s = Math.sin((sq / 0.3) * Math.PI); p.scale.set(1 + 0.03 * s, 1 - 0.09 * s, 1 + 0.03 * s); }
       if (sq >= 0 && sq < 0.8) landed = { y: p.userData.targetY, k: sq / 0.8 };
       if (t < t0 + T.piece) {
-        holding = p;
-        const attach = p.position.y + p.userData.height + 0.55;
+        holding = p; holdK = k;
+        const attach = p.position.y + p.userData.height + ATTACH;
         const r = clamp01((t - t0 - T.piece * 0.62) / (T.piece * 0.38));
         hookY = k < 1 ? attach : lerp(attach, HOOK_REST, easeInOut(r));
       }
@@ -492,16 +606,33 @@
       d.scale.setScalar(0.7 + 1.4 * k);
       d.material.opacity = 0.8 * (1 - k);
     });
+    // стройка закончена: тележка откатывается к мачте, крюк поднимается — не висит над знаком ∞
+    const park = easeInOut(clamp01((t - T.done - 0.3) / 1.4));
+    trolley.position.x = lerp(REACH, REACH * 0.45, park);
+    if (t > T.done) hookY = lerp(HOOK_REST, HOOK_TOP - 0.4, park);
     hook.position.set(0, hookY, 0);
-    const cableLen = HOOK_TOP - (hookY + 0.14);
-    cable.position.set(0, hookY + 0.14 + cableLen / 2, 0); cable.scale.y = Math.max(cableLen, 0.01);
+    const cableLen = HOOK_TOP - (hookY + HOOK_CABLE);
+    cable.position.set(0, hookY + HOOK_CABLE + cableLen / 2, 0); cable.scale.y = Math.max(cableLen, 0.01);
     top.rotation.y = JIB_YAW + (t > T.done + 0.5 ? Math.sin((t - T.done) * 0.5) * 0.05 * clamp01(t - T.done - 0.5) : 0);
+    hook.rotation.y = cable.rotation.y = top.rotation.y;   // обойма и тросы развёрнуты вдоль стрелы
     if (t > T.done) {                                 // после стройки трос идёт за стрелой
       top.updateMatrixWorld(true);
       trolley.getWorldPosition(tmpA);
       hook.position.x = tmpA.x; hook.position.z = tmpA.z;
       cable.position.x = tmpA.x; cable.position.z = tmpA.z;
     }
+    // стропы: пока этаж опускают, он висит на четырёх тросах от крюка к углам
+    const slung = holding && holdK < 1;
+    slings.forEach((s, i) => {
+      s.visible = slung;
+      if (!slung) return;
+      const c = (W / 2) * 0.8, top2 = holding.position.y + holding.userData.height * holding.scale.y;
+      sA.set(hook.position.x, hookY + HOOK_TIP, hook.position.z);
+      sC.set(i < 2 ? -c : c, top2, i % 2 ? -c : c);
+      line(s, sA, sC);
+    });
+    const blinkOn = Math.sin(t * 3.2) > 0.55;           // красные огни крана мигают вместе с огнём на крыше
+    craneLights.forEach((g) => { g.material.opacity = blinkOn ? 0.85 : 0.08; });
 
     // свет в окнах, знак на крыше, искры
     const L = easeInOut(clamp01((t - T.lights) / 0.9));
@@ -524,14 +655,15 @@
     });
 
     // из готовой студии одна за другой вылетают игры
-    const gameY = roof.userData.targetY + 1.5;
+    const gameY = roof.userData.targetY + 0.95;            // ниже стрелы крана, чтобы иконки не путались с ней
     games.forEach((gm, i) => {
       const local = t - T.lights - 0.9 - i * G_EVERY;
       const ph = local >= 0 ? local % (games.length * G_EVERY) : -1;
       if (ph < 0 || ph > G_LIFE) { gm.g.visible = false; return; }
-      const k = ph / G_LIFE, a = Math.atan2(camOffset.z, camOffset.x) + gameDir[i] * 1.1, r = 0.2 + 1.6 * k;
+      // летят к зрителю веером, в сторону от стрелы
+      const k = ph / G_LIFE, a = Math.atan2(camOffset.z, camOffset.x) + gameDir[i] * 0.75, r = 0.35 + 1.9 * k;
       gm.g.visible = true;
-      gm.g.position.set(Math.cos(a) * r, gameY + 1.6 * k, Math.sin(a) * r);
+      gm.g.position.set(Math.cos(a) * r, gameY + 1.15 * k, Math.sin(a) * r);
       gm.g.rotation.set(0, CAM_YAW + Math.sin(t * 2 + i) * 0.35, Math.sin(t * 1.6 + i) * 0.12);
       gm.g.scale.setScalar(0.35 + 0.65 * easeOut(clamp01(k / 0.2)));
       const op = Math.max(0, Math.min(1, k / 0.12, (1 - k) / 0.3));
@@ -653,7 +785,7 @@
     if (!w || !h) return;
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
-    camera.fov = w / h < 0.9 ? 34 : 30;
+    camera.fov = w / h < 0.9 ? 36 : 32;              // запас сверху — чтобы влез оголовок крана
     camera.updateProjectionMatrix();
   }
   resize();
